@@ -1,5 +1,5 @@
 <script setup>
-import AdminLayout from '@/Layouts/AdminLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
 // Terima props dari controller jika ada
@@ -9,7 +9,7 @@ import { Head } from '@inertiajs/vue3';
 <template>
     <Head title="Admin Dashboard" />
 
-    <AdminLayout>
+    <AuthenticatedLayout>
         <h2 class="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -27,5 +27,5 @@ import { Head } from '@inertiajs/vue3';
             </div>
         </div>
 
-        </AdminLayout>
+        </AuthenticatedLayout>
 </template>

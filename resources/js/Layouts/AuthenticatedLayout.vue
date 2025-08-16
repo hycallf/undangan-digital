@@ -1,14 +1,46 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+
 import AdminSidebar from '@/Layouts/Partials/AdminSidebar.vue';
 import ReceptionistSidebar from '@/Layouts/Partials/ReceptionistSidebar.vue';
 import TopNavbar from '@/Layouts/Partials/TopNavBar.vue';
-
+import Swal from 'sweetalert2';
+import BackToTopButton from '@/Components/UI/BackToTopButton.vue';
 // State untuk mengontrol visibilitas sidebar di mode mobile
 const sidebarOpen = ref(false);
 
-const userRole = computed(() => usePage().props.auth.user.role);
+const page = usePage();
+const userRole = computed(() => page.props.auth.user.role);
+
+// Pantau objek flash secara keseluruhan, bukan hanya 'success'
+watch(
+    () => page.props.flash,
+    (flash) => {
+        // Hanya jalankan jika objek flash dan properti success ada isinya
+        if (flash && flash.success) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            Toast.fire({
+                icon: 'success',
+                title: flash.success
+            });
+        }
+        // Anda bisa menambahkan 'else if (flash && flash.error)' di sini untuk notifikasi error
+    },
+    { deep: true } // Opsi ini penting untuk memantau perubahan di dalam objek
+);
+
 </script>
 
 <template>
@@ -41,5 +73,6 @@ const userRole = computed(() => usePage().props.auth.user.role);
                 <slot />
             </main>
         </div>
+        <BackToTopButton />
     </div>
 </template>

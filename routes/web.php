@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\CheckInController;
-use App\Http\Controllers\EventController;
+// use App\Http\Controllers\EventController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\GuestDashboardController;
+use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\GuestDashboardController;
 use App\Http\Controllers\ScannerController;
 
 Route::get('/', function () {
@@ -20,9 +22,6 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -34,9 +33,17 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Route untuk halaman dashboard utama admin
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('events', EventController::class);
+    // Route::resource('events', EventController::class);
+    Route::post('events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::get('/events/{event}/guests', [GuestDashboardController::class, 'show'])
          ->name('events.guests.show');
+
+    Route::get('/check-in/{event}', [CheckInController::class, 'scanner'])
+        ->middleware('reception.access') // Dilindungi middleware
+        ->name('checkin.scanner');
+
+    Route::resource('events', EventController::class)->middleware('reception.access');
+
 });
 
 Route::middleware(['auth', 'receptionist'])->prefix('receptionist')->name('receptionist.')->group(function () {
@@ -45,13 +52,26 @@ Route::middleware(['auth', 'receptionist'])->prefix('receptionist')->name('recep
 
 Route::get('/admin/check-in/{event}', [CheckInController::class, 'scanner']);
 // Halaman untuk menampilkan undangan
+// Halaman utama untuk menampilkan undangan
 Route::get('/undangan/{event:slug}', [InvitationController::class, 'show'])->name('invitation.show');
 
-// Endpoint untuk memproses form RSVP
-Route::post('/undangan/{event:slug}/rsvp', [InvitationController::class, 'store'])->name('invitation.rsvp');
+// Endpoint untuk memproses form RSVP & Ucapan
+Route::post('/undangan/{event:slug}/rsvp', [InvitationController::class, 'store'])->name('invitation.rsvp.store');
+
+// routes/web.php
+Route::get('/undangan/{event:slug}/save-calendar', [InvitationController::class, 'saveToCalendar'])->name('invitation.save-calendar');
+
+// Halaman sukses yang menampilkan QR Code
+Route::get('/sukses/{guest:qr_code_token}', [InvitationController::class, 'success'])->name('invitation.success');
+
+// Halaman untuk mengedit RSVP & Ucapan
+Route::get('/edit/{guest:qr_code_token}', [InvitationController::class, 'edit'])->name('invitation.rsvp.edit');
+
+// Endpoint untuk memproses update RSVP & Ucapan
+Route::put('/update/{guest:qr_code_token}', [InvitationController::class, 'update'])->name('invitation.rsvp.update');
 
 // Halaman sukses setelah RSVP, menampilkan QR Code
-Route::get('/rsvp-success/{guest:qr_code_token}', [InvitationController::class, 'success'])->name('rsvp.success');
-Route::get('/rsvp-success/{guest:qr_code_token}/print', [InvitationController::class, 'print'])->name('rsvp.print');
+// Route::get('/rsvp-success/{guest:qr_code_token}', [InvitationController::class, 'success'])->name('rsvp.success');
+// Route::get('/rsvp-success/{guest:qr_code_token}/print', [InvitationController::class, 'print'])->name('rsvp.print');
 
 require __DIR__.'/auth.php';

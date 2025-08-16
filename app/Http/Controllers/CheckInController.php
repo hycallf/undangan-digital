@@ -65,21 +65,31 @@ class CheckInController extends Controller
     {
         $request->validate([
             'guest_id' => 'required|exists:guests,id',
-            'photo' => 'required|image|max:2048', // Max 2MB
+            'photo' => 'required|image|max:2048',
         ]);
 
-        $guest = Guest::findOrFail($request->guest_id);
+        $guest = Guest::with('event')->findOrFail($request->guest_id); // Pastikan load relasi event
 
-        $path = $request->file('photo')->store('photos', 'public'); // Store in storage/app/public/photos
+        // Ambil path folder unik dari relasi event
+        $eventFolderPath = $guest->event->storage_path;
 
-        $guest->photo_path = $path;
-        $guest->attendance_status = 'present'; // Final status after photo upload
+        // Definisikan path untuk foto tamu
+        $guestPhotoPath = $eventFolderPath . '/guest';
+
+        $file = $request->file('photo');
+        $fileName = 'checkin-' . $guest->id . '-' . uniqid() . '.' . $file->extension();
+
+        // Simpan file ke path yang benar
+        $path = $file->storeAs($guestPhotoPath, $fileName, 'public');
+
+        $guest->photo_path = $path; // Simpan path lengkapnya
+        $guest->attendance_status = 'present';
         $guest->save();
 
         return response()->json([
             'status' => 'success',
             'message' => 'Foto berhasil diunggah!',
-            'photo_url' => Storage::url($path), // Get public URL of the photo
+            'photo_url' => Storage::url($path),
         ]);
     }
 }

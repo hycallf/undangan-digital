@@ -9,6 +9,7 @@
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
         "@tailwindcss/forms": "^0.5.3",
+        "@tailwindcss/typography": "^0.5.16",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-vue": "^6.0.0",
         "autoprefixer": "^10.4.21",
@@ -23,6 +24,19 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
-        "vue-qrcode-reader": "^5.7.3"
+        "@ckeditor/ckeditor5-build-classic": "^41.4.2",
+        "@ckeditor/ckeditor5-vue": "^7.3.0",
+        "@fortawesome/fontawesome-svg-core": "^7.0.0",
+        "@fortawesome/free-brands-svg-icons": "^7.0.0",
+        "@fortawesome/free-solid-svg-icons": "^7.0.0",
+        "@fortawesome/vue-fontawesome": "^3.1.1",
+        "@vueuse/core": "^13.6.0",
+        "aos": "^2.3.4",
+        "qrcode.vue": "^3.6.0",
+        "sweetalert2": "^11.22.2",
+        "vue-easy-lightbox": "^1.19.0",
+        "vue-qrcode-reader": "^5.7.3",
+        "vue-scrollto": "^2.20.0",
+        "vuedraggable": "^4.1.0"
     }
 }

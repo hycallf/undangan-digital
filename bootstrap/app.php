@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdminRole::class,
             'receptionist' => \App\Http\Middleware\CheckReceptionistRole::class,
+            'reception.access' => \App\Http\Middleware\CheckReceptionAccess::class,
         ]);
 
         //
