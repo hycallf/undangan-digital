@@ -16,13 +16,13 @@ const totalBelumHadir = computed(() => totalRSVP.value - totalHadir.value);
 </script>
 
 <template>
-    <Head :title="'Tamu ' + event.groom_name + ' & ' + event.bride_name" />
+    <Head :title="'Tamu ' + event.groom?.nickname + ' & ' + event.bride?.nickname" />
 
 
 
     <AuthenticatedLayout>
         <template #header>
-            Daftar Tamu: {{ event.groom_name }} & {{ event.bride_name }}
+            Daftar Tamu: {{ event.groom?.nickname }} & {{ event.bride?.nickname }}
         </template>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

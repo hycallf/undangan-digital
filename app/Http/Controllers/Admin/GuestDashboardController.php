@@ -16,7 +16,7 @@ class GuestDashboardController extends Controller
         $this->authorize('view', $event);
 
         // Load tamu dengan relasi event
-        $event->load('guests');
+        $event->load(['groom', 'bride','guests']);
 
         return Inertia::render('Admin/Guests/Show', [
             'event' => $event,

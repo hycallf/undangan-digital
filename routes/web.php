@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\GuestDashboardController;
 use App\Http\Controllers\ScannerController;
+use App\Http\Controllers\Receptionist\DashboardController as ReceptionistDashboardController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -46,12 +47,14 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
 });
 
-Route::middleware(['auth', 'receptionist'])->prefix('receptionist')->name('receptionist.')->group(function () {
-    Route::get('/scanner', [ScannerController::class, 'index'])->name('scanner');
+Route::middleware(['auth', 'verified', 'reception.access'])->prefix('receptionist')->name('receptionist.')->group(function () {
+    // Halaman utama resepsionis (daftar event)
+    Route::get('/dashboard', [ReceptionistDashboardController::class, 'index'])->name('dashboard');
+
+    // Halaman check-in untuk event yang dipilih
+    Route::get('/check-in/{event}', [ReceptionistDashboardController::class, 'show'])->name('checkin');
 });
 
-Route::get('/admin/check-in/{event}', [CheckInController::class, 'scanner']);
-// Halaman untuk menampilkan undangan
 // Halaman utama untuk menampilkan undangan
 Route::get('/undangan/{event:slug}', [InvitationController::class, 'show'])->name('invitation.show');
 
@@ -70,8 +73,5 @@ Route::get('/edit/{guest:qr_code_token}', [InvitationController::class, 'edit'])
 // Endpoint untuk memproses update RSVP & Ucapan
 Route::put('/update/{guest:qr_code_token}', [InvitationController::class, 'update'])->name('invitation.rsvp.update');
 
-// Halaman sukses setelah RSVP, menampilkan QR Code
-// Route::get('/rsvp-success/{guest:qr_code_token}', [InvitationController::class, 'success'])->name('rsvp.success');
-// Route::get('/rsvp-success/{guest:qr_code_token}/print', [InvitationController::class, 'print'])->name('rsvp.print');
 
 require __DIR__.'/auth.php';

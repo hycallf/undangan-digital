@@ -5,7 +5,6 @@ import './bootstrap';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import VueScrollTo from 'vue-scrollto';
-// import VueDOMPurifyHTML from 'vue-dompurify-html';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -54,7 +53,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) })
             .use(plugin)
-            .use(ZiggyVue);
+            .use(ZiggyVue)
 
             app.use(VueScrollTo, {
                 container: "body",

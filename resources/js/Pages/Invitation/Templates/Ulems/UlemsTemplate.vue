@@ -3,6 +3,8 @@ import { ref, watch, nextTick} from 'vue';
 import { Head } from '@inertiajs/vue3';
 import InvitationLayout from '@/Layouts/InvitationLayout.vue';
 import BottomNav from '../../Partials/BottomNav.vue';
+import useMusicPlayer from '@/Composables/useMusicPlayer';
+
 
 import { faMusic, faPause } from '@fortawesome/free-solid-svg-icons';
 // Komponen Bagian Undangan (Partials)
@@ -51,6 +53,40 @@ const toggleMusic = () => {
     }
 };
 
+const { lowerVolume, restoreVolume } = useMusicPlayer();
+
+// Fungsi ini akan mencari dan mengaktifkan semua video YouTube di halaman
+const setupYouTubePlayers = () => {
+    // Cari semua iframe YouTube yang sudah kita proses di backend
+    const players = document.querySelectorAll('iframe[src*="youtube.com/embed"]');
+
+    players.forEach(playerElement => {
+        // Beri ID unik jika belum ada
+        if (!playerElement.id) {
+            playerElement.id = 'ytplayer-' + Math.random().toString(36).substring(7);
+        }
+
+        new YT.Player(playerElement.id, {
+            events: {
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    });
+};
+
+// Callback yang akan dijalankan saat video diputar, dijeda, dll.
+const onPlayerStateChange = (event) => {
+    // YT.PlayerState.PLAYING nilainya 1
+    if (event.data === 1) {
+        lowerVolume();
+    }
+
+    // YT.PlayerState.PAUSED (2) atau YT.PlayerState.ENDED (0)
+    if (event.data === 2 || event.data === 0) {
+        restoreVolume();
+    }
+};
+
 watch(isInvitationOpen, (isNowOpen) => {
     // Jalankan hanya saat undangan DIBUKA (nilainya menjadi true)
     if (isNowOpen) {
@@ -73,8 +109,17 @@ watch(isInvitationOpen, (isNowOpen) => {
             const sections = document.querySelectorAll('section[id]');
             sections.forEach((section) => observer.observe(section));
         });
+
+        const interval = setInterval(() => {
+            if (window.YT && window.YT.Player) {
+                clearInterval(interval);
+                setupYouTubePlayers();
+            }
+        }, 100);
     }
 });
+
+
 
 </script>
 
@@ -95,7 +140,8 @@ watch(isInvitationOpen, (isNowOpen) => {
             </section>
 
             <div v-if="isInvitationOpen">
-                <section id="couple"><CoupleSection :event="event" />
+                <section id="couple">
+                    <CoupleSection :event="event" />
                     <SectionSeparator :imageName="'Separator.jpeg'" />
                     <QuoteSection :event="event" />
                     <SectionSeparator :imageName="'Separator.jpeg'" :flip="true" />

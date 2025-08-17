@@ -71,7 +71,7 @@ class InvitationController extends Controller
     // Menampilkan halaman sukses dengan QR Code
     public function success(Guest $guest)
     {
-        $guest->load('event'); // Muat relasi event
+        $guest->load('event.groom', 'event.bride');
 
         return Inertia::render('Invitation/Success', [
             'guest' => $guest,

@@ -1,6 +1,6 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
-import { watch } from 'vue'; // Impor watch
+import { watch, ref } from 'vue'; // Impor watch
 import QrcodeVue from 'qrcode.vue';
 
 const props = defineProps({
@@ -11,6 +11,8 @@ const props = defineProps({
         default: null
     },
 });
+
+const showQr = ref(false)
 
 const form = useForm({
     name: props.guestName || '',
@@ -46,8 +48,9 @@ const submit = () => {
 
         <div v-if="existingGuest" class="flex flex-col items-center">
             <p class="font-body font-semibold text-lg" style="color: var(--color-primary);">{{ existingGuest.name }}</p>
-            <div class="my-4 inline-block p-4 bg-white rounded-lg shadow-lg">
-                <qrcode-vue :text="existingGuest.qr_code_token" :size="200" />
+            <div @click="showQr = true" class="my-4 inline-block p-4 bg-white rounded-lg shadow-lg">
+                <qrcode-vue :value="existingGuest.qr_code_token" :size="200" level="H"/>
+                <p class="mt-2 text-xs text-gray-500 text-center">Klik untuk memperbesar</p>
             </div>
              <a :href="route('invitation.rsvp.edit', existingGuest.qr_code_token)" class="text-sm text-indigo-600 hover:underline">
                 Ubah Jawaban atau Ucapan?
@@ -97,6 +100,23 @@ const submit = () => {
             </div>
         </form>
     </section>
+
+    <transition name="zoom">
+        <div v-if="showQr"
+             class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
+             @click.self="showQr = false">
+            <div class="relative p-6 bg-white rounded-2xl shadow-xl">
+                <!-- Tombol Close -->
+                <button @click="showQr = false"
+                        class="absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:bg-red-600">
+                    ✕
+                </button>
+
+                <!-- QR Besar -->
+                <qrcode-vue :value="existingGuest.qr_code_token" :size="400" level="H" />
+            </div>
+        </div>
+    </transition>
 </template>
 
 <style scoped>
@@ -105,5 +125,14 @@ const submit = () => {
 }
 .form-radio {
     @apply h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500;
+}
+
+/* Animasi Zoom */
+.zoom-enter-active, .zoom-leave-active {
+  transition: all 0.3s ease;
+}
+.zoom-enter-from, .zoom-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
 }
 </style>

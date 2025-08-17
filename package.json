@@ -8,6 +8,7 @@
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
+        "@tailwindcss/aspect-ratio": "^0.4.2",
         "@tailwindcss/forms": "^0.5.3",
         "@tailwindcss/typography": "^0.5.16",
         "@tailwindcss/vite": "^4.0.0",
@@ -32,6 +33,7 @@
         "@fortawesome/vue-fontawesome": "^3.1.1",
         "@vueuse/core": "^13.6.0",
         "aos": "^2.3.4",
+        "dompurify": "^3.2.6",
         "qrcode.vue": "^3.6.0",
         "sweetalert2": "^11.22.2",
         "vue-easy-lightbox": "^1.19.0",

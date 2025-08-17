@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
+use App\Helpers\HtmlHelper;
 
 use App\Models\Event;
 use App\Models\EventDetail;
@@ -180,6 +181,11 @@ class EventController extends Controller
                 $musicFileName = 'music-' . uniqid() . '.' . $musicFile->extension();
                 $detailData['music_path'] = $musicFile->storeAs($eventFolderPath . '/event', $musicFileName, 'public');
             }
+
+            if (!empty($detailData['story_text'])) {
+                $detailData['story_text'] = HtmlHelper::processOembed($detailData['story_text']);
+            }
+
             $event->details()->create($detailData);
 
             // 6. Buat Ceremonies (tidak ada file, tidak berubah)
@@ -351,6 +357,16 @@ class EventController extends Controller
                 if ($request->hasFile('details.music')) {
                     Storage::disk('public')->delete($event->details->music_path);
                     $detailData['music_path'] = $request->file('details.music')->store($event->storage_path . '/event', 'public');
+                }
+
+                if (!empty($detailData['story_text'])) {
+                    $detailData['story_text'] = HtmlHelper::processOembed($detailData['story_text']);
+                }
+                if (!empty($detailData['opening_text'])) {
+                    $detailData['opening_text'] = HtmlHelper::processOembed($detailData['opening_text']);
+                }
+                if (!empty($detailData['closing_text'])) {
+                    $detailData['closing_text'] = HtmlHelper::processOembed($detailData['closing_text']);
                 }
                 $event->details()->updateOrCreate([], $detailData);
 

@@ -49,7 +49,7 @@ const handleHide = () => {
                 class="w-full space-y-4"
                 data-aos="fade-up"
             >
-                <p v-if="image.title && index % 2 === 0" class="font-body text-center text-md" style="color: var(--color-text-muted);">
+                <p v-if="image.title" class="font-body text-center text-md" style="color: var(--color-text-muted);">
                     {{ image.title }}
                 </p>
 
@@ -64,9 +64,9 @@ const handleHide = () => {
                     />
                 </div>
 
-                <p v-if="image.title && index % 2 !== 0" class="font-body text-center text-md" style="color: var(--color-text-muted);">
+                <!-- <p v-if="image.title" class="font-body text-center text-md" style="color: var(--color-text-muted);">
                     {{ image.title }}
-                </p>
+                </p> -->
             </div>
         </div>
         <div v-else class="text-center text-[--color-text-muted]">
