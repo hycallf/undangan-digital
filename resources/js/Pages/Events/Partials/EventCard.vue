@@ -60,7 +60,7 @@ const user = usePage().props.auth.user;
 
             <div class="mt-4 pt-4 border-t border-gray-200 space-y-2">
                 <div class="grid grid-cols-2 gap-2">
-                    <Link :href="route('admin.checkin.scanner', event.id)" as="button" class="btn-reception">
+                    <Link :href="route('checkin.scanner', event.id)" as="button" class="btn-reception">
                         <font-awesome-icon :icon="faQrcode" class="mr-2" />
                         Check-in
                     </Link>

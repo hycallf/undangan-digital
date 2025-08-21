@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\GuestDashboardController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\Receptionist\DashboardController as ReceptionistDashboardController;
 
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -34,25 +35,24 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Route untuk halaman dashboard utama admin
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Route::resource('events', EventController::class);
     Route::post('events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::get('/events/{event}/guests', [GuestDashboardController::class, 'show'])
          ->name('events.guests.show');
-
-    Route::get('/check-in/{event}', [CheckInController::class, 'scanner'])
-        ->middleware('reception.access') // Dilindungi middleware
-        ->name('checkin.scanner');
-
     Route::resource('events', EventController::class)->middleware('reception.access');
 
+
+    Route::get('/events/{event}/guests/export/{type}', [GuestDashboardController::class, 'export'])->name('events.guests.export');
+    Route::post('/events/{event}/guests/import', [GuestDashboardController::class, 'import'])->name('events.guests.import');
 });
 
-Route::middleware(['auth', 'verified', 'reception.access'])->prefix('receptionist')->name('receptionist.')->group(function () {
-    // Halaman utama resepsionis (daftar event)
+Route::middleware(['auth', 'verified', 'reception.access'])->group(function () {
     Route::get('/dashboard', [ReceptionistDashboardController::class, 'index'])->name('dashboard');
 
-    // Halaman check-in untuk event yang dipilih
-    Route::get('/check-in/{event}', [ReceptionistDashboardController::class, 'show'])->name('checkin');
+    Route::get('events/{event}/guests', [GuestDashboardController::class, 'show'])->name('events.guests.show');
+
+    Route::get('/events', [EventController::class, 'Index'])->name('events.index');
+
+    Route::get('/check-in/{event}', [CheckInController::class, 'scanner'])->name('checkin.scanner');
 });
 
 // Halaman utama untuk menampilkan undangan
@@ -73,5 +73,37 @@ Route::get('/edit/{guest:qr_code_token}', [InvitationController::class, 'edit'])
 // Endpoint untuk memproses update RSVP & Ucapan
 Route::put('/update/{guest:qr_code_token}', [InvitationController::class, 'update'])->name('invitation.rsvp.update');
 
+
+Route::get('/debug-excel/{event}', function($eventId) {
+    try {
+        $event = App\Models\Event::findOrFail($eventId);
+        $export = new App\Exports\GuestsExport($event->id);
+
+        // Test 1: Collection
+        $collection = $export->collection();
+        echo "Collection count: " . $collection->count() . "<br>";
+
+        // Test 2: Headings
+        if (method_exists($export, 'headings')) {
+            echo "Headings: " . implode(', ', $export->headings()) . "<br>";
+        }
+
+        // Test 3: First mapped item
+        if ($collection->isNotEmpty()) {
+            $firstMapped = $export->map($collection->first());
+            echo "First mapped: " . implode(', ', $firstMapped) . "<br>";
+        }
+
+        // Test 4: Direct Excel download
+        echo "Testing Excel download...<br>";
+        return Excel::download($export, 'test-export.xlsx');
+
+    } catch (\Exception $e) {
+        dd([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+})->middleware('auth');
 
 require __DIR__.'/auth.php';

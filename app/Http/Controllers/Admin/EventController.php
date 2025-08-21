@@ -39,12 +39,11 @@ class EventController extends Controller
         ->with(['groom', 'bride', 'ceremonies'])
 
         // 2. UBAH LOGIKA FILTER TANGGAL
-        ->when($request->input('date'), function ($query, $date) {
-            // Filter event yang MEMILIKI ACARA (ceremonies) pada tanggal yang dipilih
-            $query->whereHas('ceremonies', function ($subQuery) use ($date) {
-                $subQuery->whereDate('ceremony_date', $date);
-            });
-        })
+        ->when($request->input('start_date') && $request->input('end_date'), function ($query) use ($request) {
+                $query->whereHas('ceremonies', function ($subQuery) use ($request) {
+                    $subQuery->whereBetween('ceremony_date', [$request->input('start_date'), $request->input('end_date')]);
+                });
+            })
 
         // ... logika pencarian nama tidak berubah ...
         ->when($request->input('search'), function ($query, $search) {
@@ -63,9 +62,9 @@ class EventController extends Controller
         ->latest()
         ->get();
 
-        return Inertia::render('Admin/Events/Index', [
+        return Inertia::render('Events/Index', [
             'events' => $events,
-            'filters' => $request->only(['search','date']), // Kirim kembali filter ke view
+            'filters' => $request->only(['search', 'start_date', 'end_date']), // Kirim kembali filter ke view
         ]);
     }
 
@@ -74,7 +73,7 @@ class EventController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Events/Create',[
+        return Inertia::render('Events/Create',[
             'themeOptions' => EventTheme::values(),
             'templateOptions' => EventTemplate::all(),
         ]);
@@ -164,6 +163,7 @@ class EventController extends Controller
 
             // 4. Buat Event utama dan SIMPAN STORAGE_PATH
             $event = Event::create([
+                'event_name' => 'Pernikahan ' . $groom->nickname . ' & ' . $bride->nickname,
                 'user_id' => Auth::id(),
                 'groom_partner_id' => $groom->id,
                 'bride_partner_id' => $bride->id,
@@ -258,7 +258,7 @@ class EventController extends Controller
 
         // dd($event->galleryPhotos);
 
-        return Inertia::render('Admin/Events/Edit', [
+        return Inertia::render('Events/Edit', [
             'event' => $event,
             'themeOptions' => EventTheme::values(),
             'templateOptions' => EventTemplate::all(),

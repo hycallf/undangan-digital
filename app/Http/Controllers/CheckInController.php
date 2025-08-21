@@ -16,7 +16,7 @@ class CheckInController extends Controller
     // Menampilkan halaman dengan kamera scanner
     public function scanner(Event $event)
     {
-        return Inertia::render('Admin/CheckIn', [
+        return Inertia::render('CheckIn/Index', [
             'event' => $event
         ]);
     }

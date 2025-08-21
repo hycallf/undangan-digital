@@ -2,6 +2,9 @@ import '../css/app.css';
 import '../css/style.css';
 import './bootstrap';
 
+import Vue3EasyDataTable from 'vue3-easy-data-table';
+import 'vue3-easy-data-table/dist/style.css';
+
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import VueScrollTo from 'vue-scrollto';
@@ -52,6 +55,7 @@ createInertiaApp({
     },
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) })
+
             .use(plugin)
             .use(ZiggyVue)
 
@@ -62,6 +66,7 @@ createInertiaApp({
                 offset: -60, // Jarak dari atas (berguna jika ada header fixed)
             });
             app.component('font-awesome-icon', FontAwesomeIcon); // Daftarkan komponen Font Awesome
+            app.component('EasyDataTable', Vue3EasyDataTable);
             app.mount(el);
             AOS.init();
 

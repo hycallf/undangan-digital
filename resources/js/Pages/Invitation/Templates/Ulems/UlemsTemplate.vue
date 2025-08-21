@@ -53,6 +53,38 @@ const toggleMusic = () => {
     }
 };
 
+watch(isInvitationOpen, (isNowOpen) => {
+    // Jalankan hanya saat undangan DIBUKA (nilainya menjadi true)
+    if (isNowOpen) {
+        // nextTick() akan menunggu hingga Vue selesai memperbarui DOM
+        // (yaitu, setelah semua section di dalam v-if ditampilkan)
+        nextTick(() => {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            activeSection.value = entry.target.id;
+                        }
+                    });
+                },
+                // Opsi: section dianggap aktif jika 40% bagiannya terlihat
+                { threshold: 0.4 }
+            );
+
+            // Ambil semua elemen <section> yang memiliki ID dan amati mereka
+            const sections = document.querySelectorAll('section[id]');
+            sections.forEach((section) => observer.observe(section));
+        });
+
+        const interval = setInterval(() => {
+            if (window.YT && window.YT.Player) {
+                clearInterval(interval);
+                setupYouTubePlayers();
+            }
+        }, 100);
+    }
+});
+
 const { lowerVolume, restoreVolume } = useMusicPlayer();
 
 // Fungsi ini akan mencari dan mengaktifkan semua video YouTube di halaman
@@ -86,40 +118,6 @@ const onPlayerStateChange = (event) => {
         restoreVolume();
     }
 };
-
-watch(isInvitationOpen, (isNowOpen) => {
-    // Jalankan hanya saat undangan DIBUKA (nilainya menjadi true)
-    if (isNowOpen) {
-        // nextTick() akan menunggu hingga Vue selesai memperbarui DOM
-        // (yaitu, setelah semua section di dalam v-if ditampilkan)
-        nextTick(() => {
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            activeSection.value = entry.target.id;
-                        }
-                    });
-                },
-                // Opsi: section dianggap aktif jika 40% bagiannya terlihat
-                { threshold: 0.4 }
-            );
-
-            // Ambil semua elemen <section> yang memiliki ID dan amati mereka
-            const sections = document.querySelectorAll('section[id]');
-            sections.forEach((section) => observer.observe(section));
-        });
-
-        const interval = setInterval(() => {
-            if (window.YT && window.YT.Player) {
-                clearInterval(interval);
-                setupYouTubePlayers();
-            }
-        }, 100);
-    }
-});
-
-
 
 </script>
 

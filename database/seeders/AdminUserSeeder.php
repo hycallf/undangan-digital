@@ -14,15 +14,15 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::create([
-        //     'name' => 'Admin Vendor',
-        //     'email' => 'admin@event.com',
-        //     // Gunakan Hash::make untuk mengenkripsi password
-        //     'password' => Hash::make('password123'),
-        //     'role' => 'admin',
-        // ]);
+        User::updateOrCreate([
+            'name' => 'Admin Vendor',
+            'email' => 'admin@event.com',
+            // Gunakan Hash::make untuk mengenkripsi password
+            'password' => Hash::make('password123'),
+            'role' => 'admin',
+        ]);
 
-        User::create([
+        User::updateOrCreate([
             'name' => 'Resepsionis 1',
             'email' => 'resepsionis@event.com',
             'password' => Hash::make('password123'),

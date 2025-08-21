@@ -19,7 +19,7 @@ class DashboardController extends Controller
         // Nanti bisa disesuaikan agar hanya menampilkan event yang ditugaskan.
         $events = Event::with(['groom', 'bride'])->latest()->get();
 
-        return Inertia::render('Receptionist/Dashboard', [
+        return Inertia::render('Events/Index', [
             'events' => $events
         ]);
     }

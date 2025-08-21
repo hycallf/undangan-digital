@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->string('phone');
             $table->string('photo_path')->nullable(); // Foto tamu, bisa diisi dengan URL atau path lokal
             $table->text('message')->nullable();
             $table->string('qr_code_token')->unique()->nullable(); // Token unik untuk QR code

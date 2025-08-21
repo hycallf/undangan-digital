@@ -61,6 +61,7 @@ class InvitationController extends Controller
         $guest = $event->guests()->create([
             'name' => $validated['name'],
             'confirmation_status' => $validated['confirmation_status'],
+            'attendance_status' => $validated['confirmation_status'] === 'not_attending' ? 'absent' : 'planned',
             'message' => $validated['message'],
             'qr_code_token' => Str::uuid()->toString(), // Generate token unik
         ]);
