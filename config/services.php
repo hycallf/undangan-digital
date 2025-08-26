@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'fonnte' => [
+        'base_url' => env('FONNTE_BASE_URL', 'https://api.fonnte.com'),
+        'token' => env('FONNTE_API_TOKEN'),
+        'device' => env('FONNTE_DEVICE', 'default'),
+        'rate_limit' => [
+            'per_minute' => env('FONNTE_RATE_LIMIT_PER_MINUTE', 30),
+            'per_hour' => env('FONNTE_RATE_LIMIT_PER_HOUR', 1000),
+        ],
+    ],
+
 ];

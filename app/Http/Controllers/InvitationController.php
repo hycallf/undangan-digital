@@ -21,7 +21,7 @@ class InvitationController extends Controller
     {
         $event->load(['groom', 'bride', 'details', 'ceremonies', 'quotes', 'galleryPhotos', 'template', 'guests']);
 
-        $guestName = $request->query('to');
+        $guestIdentifier = $request->query('to');
 
         $templateComponent = $event->template ? $event->template->view_component : 'Invitation/Templates/Ulems/UlemsTemplate';
 
@@ -29,21 +29,28 @@ class InvitationController extends Controller
         $themeStyle = $event->template ? $event->template->default_options : [];
 
         $existingGuest = null;
+        $guestName = null;
 
-        // Jika ada nama di URL, cari di database untuk event ini
-        if ($guestName) {
-            $existingGuest = Guest::where('event_id', $event->id)
-                                ->where('name', $guestName)
-                                ->first();
+        // Jika ada identifier di URL, cari di database untuk event ini
+        if ($guestIdentifier) {
+            // Cari berdasarkan unique_identifier terlebih dahulu, jika tidak ada cari berdasarkan nama
+            $existingGuest = $event->guests()
+                ->where(function($query) use ($guestIdentifier) {
+                    $query->where('unique_identifier', $guestIdentifier)
+                          ->orWhere('name', $guestIdentifier);
+                })
+                ->first();
+
+            // Set guest name untuk form, gunakan identifier jika guest tidak ditemukan
+            $guestName = $existingGuest ? $existingGuest->name : $guestIdentifier;
         }
+
         return Inertia::render($templateComponent, [
             'event' => $event,
             'themeStyle' => $themeStyle,
             'guestName' => $guestName,
             'existingGuest' => $existingGuest,
         ]);
-
-
     }
 
     // Menyimpan data RSVP
@@ -51,20 +58,33 @@ class InvitationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'confirmation_status' => 'required|in:attending,not_attending',
+            'phone' => 'nullable|string|max:20',
+            'confirmation_status' => 'required|in:confirmed,declined',
             'message' => 'nullable|string|max:1000',
         ]);
 
-        // Logika untuk mencegah duplikasi (akan kita bahas di Fase 4)
-        // Untuk sekarang, kita buat entri baru
+        // Generate unique_identifier jika belum ada
+        $uniqueIdentifier = Str::slug($validated['name']) . '-' . Str::random(4);
 
-        $guest = $event->guests()->create([
-            'name' => $validated['name'],
-            'confirmation_status' => $validated['confirmation_status'],
-            'attendance_status' => $validated['confirmation_status'] === 'not_attending' ? 'absent' : 'planned',
-            'message' => $validated['message'],
-            'qr_code_token' => Str::uuid()->toString(), // Generate token unik
-        ]);
+        // Pastikan unique_identifier benar-benar unik untuk event ini
+        while ($event->guests()->where('unique_identifier', $uniqueIdentifier)->exists()) {
+            $uniqueIdentifier = Str::slug($validated['name']) . '-' . Str::random(4);
+        }
+
+        $guest = $event->guests()->updateOrCreate(
+            [
+                'name' => $validated['name'],
+                'event_id' => $event->id,
+            ],
+            [
+                'phone' => $validated['phone'],
+                'confirmation_status' => $validated['confirmation_status'],
+                'attendance_status' => $validated['confirmation_status'] === 'declined' ? 'absent' : 'planned',
+                'message' => $validated['message'],
+                'unique_identifier' => $uniqueIdentifier,
+                'qr_code_token' => Str::uuid()->toString(), // Generate token unik
+            ]
+        );
 
         return redirect()->route('invitation.success', ['guest' => $guest->qr_code_token]);
     }
@@ -86,7 +106,8 @@ class InvitationController extends Controller
 
         // Render halaman/komponen EditRsvp.vue dengan data guest yang ada
         return Inertia::render('Invitation/Partials/EditRsvp', [
-            'guest' => $guest
+            'guest' => $guest,
+            'event' => $guest->event,
         ]);
     }
 
@@ -97,9 +118,25 @@ class InvitationController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'confirmation_status' => 'required|in:attending,not_attending',
+            'phone' => 'nullable|string|max:20',
+            'confirmation_status' => 'required|in:confirmed,declined',
             'message' => 'nullable|string|max:1000',
         ]);
+
+        // Update unique_identifier jika nama berubah
+        if ($guest->name !== $validated['name']) {
+            $uniqueIdentifier = Str::slug($validated['name']) . '-' . Str::random(4);
+
+            // Pastikan unique_identifier benar-benar unik untuk event ini
+            while ($guest->event->guests()->where('unique_identifier', $uniqueIdentifier)->where('id', '!=', $guest->id)->exists()) {
+                $uniqueIdentifier = Str::slug($validated['name']) . '-' . Str::random(4);
+            }
+
+            $validated['unique_identifier'] = $uniqueIdentifier;
+        }
+
+        // Update attendance_status berdasarkan confirmation_status
+        $validated['attendance_status'] = $validated['confirmation_status'] === 'declined' ? 'absent' : 'planned';
 
         // Update data guest yang ada di database
         $guest->update($validated);

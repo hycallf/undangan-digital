@@ -46,6 +46,14 @@ class HandleInertiaRequests extends Middleware
                     'role' => $request->user()->role, // Tambahkan 'role' di sini!
                 ] : null,
             ],
+            'csrf_token' => csrf_token(),
+            'app_url' => config('app.url'),
+            // Add flash messages
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
+            'is_inertia' => $request->header('X-Inertia'),
         ]);
     }
 }

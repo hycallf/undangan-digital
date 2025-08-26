@@ -43,6 +43,19 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     Route::get('/events/{event}/guests/export/{type}', [GuestDashboardController::class, 'export'])->name('events.guests.export');
     Route::post('/events/{event}/guests/import', [GuestDashboardController::class, 'import'])->name('events.guests.import');
+
+    Route::delete('/events/{event}/guests/{guest}', [GuestDashboardController::class, 'destroy'])
+         ->name('events.guests.destroy');
+
+    // NEW: Bulk guest operations
+    Route::post('/events/{event}/guests/bulk-delete', [GuestDashboardController::class, 'bulkDelete'])
+         ->name('events.guests.bulk-delete');
+    Route::post('/events/{event}/guests/send-invitations', [\App\Http\Controllers\Admin\NotificationController::class, 'sendBulkInvitations'])
+         ->name('events.guests.send-invitations');
+    Route::get('/events/{event}/guests/preview-message', [\App\Http\Controllers\Admin\NotificationController::class, 'previewMessage'])
+         ->name('events.guests.preview-message');
+    Route::get('/check-fonnte-balance', [\App\Http\Controllers\Admin\NotificationController::class, 'checkBalance'])
+         ->name('admin.check-fonnte-balance');
 });
 
 Route::middleware(['auth', 'verified', 'reception.access'])->group(function () {
@@ -74,36 +87,14 @@ Route::get('/edit/{guest:qr_code_token}', [InvitationController::class, 'edit'])
 Route::put('/update/{guest:qr_code_token}', [InvitationController::class, 'update'])->name('invitation.rsvp.update');
 
 
-Route::get('/debug-excel/{event}', function($eventId) {
-    try {
-        $event = App\Models\Event::findOrFail($eventId);
-        $export = new App\Exports\GuestsExport($event->id);
-
-        // Test 1: Collection
-        $collection = $export->collection();
-        echo "Collection count: " . $collection->count() . "<br>";
-
-        // Test 2: Headings
-        if (method_exists($export, 'headings')) {
-            echo "Headings: " . implode(', ', $export->headings()) . "<br>";
-        }
-
-        // Test 3: First mapped item
-        if ($collection->isNotEmpty()) {
-            $firstMapped = $export->map($collection->first());
-            echo "First mapped: " . implode(', ', $firstMapped) . "<br>";
-        }
-
-        // Test 4: Direct Excel download
-        echo "Testing Excel download...<br>";
-        return Excel::download($export, 'test-export.xlsx');
-
-    } catch (\Exception $e) {
-        dd([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-})->middleware('auth');
+Route::get('/debug-inertia', function() {
+    return response()->json([
+        'app_url' => config('app.url'),
+        'session_domain' => config('session.domain'),
+        'request_host' => request()->getHost(),
+        'is_secure' => request()->isSecure(),
+        'headers' => request()->headers->all(),
+    ]);
+});
 
 require __DIR__.'/auth.php';

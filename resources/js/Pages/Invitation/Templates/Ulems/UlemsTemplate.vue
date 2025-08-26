@@ -146,7 +146,9 @@ const onPlayerStateChange = (event) => {
                     <StorySection :event="event" />
                 </section>
                 <section id="ceremony"><CeremonySection :event="event" /></section>
-                <section id="gallery"><GallerySection :event="event" /></section>
+                <section id="gallery">
+                    <GallerySection :event="event" />
+                </section>
                 <section id="rsvp">
                     <RsvpSection :event="event" :guest-name="guestName" :existing-guest="existingGuest"/>
                     <GuestBookSection :guests="event.guests" />

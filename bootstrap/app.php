@@ -15,11 +15,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+
+
         ]);
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdminRole::class,
             'receptionist' => \App\Http\Middleware\CheckReceptionistRole::class,
             'reception.access' => \App\Http\Middleware\CheckReceptionAccess::class,
+
         ]);
 
         //
